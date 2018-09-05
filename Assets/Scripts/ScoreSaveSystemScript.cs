@@ -31,5 +31,6 @@ public class ScoreSaveSystemScript : MonoBehaviour {
     {
         // Capture current player_name and player_score, and write it to a new row the save_file CSV, along with the timestamp
         // Afterwards, reset the game to the initial state (via the game controller).
+        save_file_handler.WriteString(player_name);
     }
 }
