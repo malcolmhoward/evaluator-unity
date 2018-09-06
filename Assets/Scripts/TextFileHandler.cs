@@ -19,7 +19,7 @@ public class TextFileHandler
     {
         //string path = "Assets/Resources/test.txt";
 
-        //Write some text to the test.txt file
+        //Write some text to the file at this.path
         StreamWriter writer = new StreamWriter(this.path, true);
         writer.WriteLine(written_string);
         Debug.Log(string.Format("Value written to save file: {0}", written_string));
@@ -27,10 +27,10 @@ public class TextFileHandler
 
         //Re-import the file to update the reference in the editor
         AssetDatabase.ImportAsset(this.path); 
-        TextAsset asset = Resources.Load("player_score") as TextAsset;
+        TextAsset asset = Resources.Load<TextAsset>("player_scores");
 
         //Print the text from the file
-        Debug.Log(asset.text);
+        //Debug.Log(asset.text);  // <-- NullReferenceException: Object reference not set to an instance of an object
     }
 
     // Method TextFileHandler.ReadString is not static and cannot be used for menu commands.
