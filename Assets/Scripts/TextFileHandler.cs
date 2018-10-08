@@ -26,8 +26,8 @@ public class TextFileHandler
         writer.Close();
 
         //Re-import the file to update the reference in the editor
-        AssetDatabase.ImportAsset(this.path); 
-        TextAsset asset = Resources.Load<TextAsset>("player_scores");
+        // AssetDatabase.ImportAsset(this.path); 
+        // TextAsset asset = Resources.Load<TextAsset>("player_scores");
 
         //Print the text from the file
         //Debug.Log(asset.text);  // <-- NullReferenceException: Object reference not set to an instance of an object
