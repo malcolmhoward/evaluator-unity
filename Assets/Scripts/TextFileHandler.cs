@@ -35,16 +35,30 @@ public class TextFileHandler
 
     // Method TextFileHandler.ReadString is not static and cannot be used for menu commands.
     //[MenuItem("Tools/Read file")]
-    public void ReadString()
+    public string ReadString(bool one_line_only=false)
     {
         //string path = "Assets/Resources/test.txt";
 
         //Read the text from directly from the test.txt file
-        StreamReader reader = new StreamReader(this.path); 
-        Debug.Log(reader.ReadToEnd());
+        StreamReader reader = new StreamReader(this.path);
+        string read_string = "";
+        if (one_line_only == true)
+        {
+            // TODO: Loop through to call ReadLine() for reach line in the reader
+            read_string = reader.ReadLine();
+        }
+        else
+        {
+            read_string = reader.ReadToEnd();
+        }
+        
+        Debug.Log(read_string);
         reader.Close();
-    }
 
+        return read_string;
+    }
+    
+    // TODO: Create the method ReadFileData() that returns a list of strings
 }
 
 //For more information, consult the following documentation:
