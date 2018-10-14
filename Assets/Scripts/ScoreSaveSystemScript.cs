@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
@@ -106,5 +107,44 @@ public class Player
     public void SetID(int new_id)
     {
         this.id = new_id;
+    }
+}
+
+public class ScoreEntry
+{
+    public Player player;
+    public DateTime timestamp;
+    public int score_total;
+    public string score_summary;
+
+    public ScoreEntry(Player new_player, DateTime new_timestamp, int new_score_total, string new_score_summary="")
+    {
+        this.SetPlayer(new_player);
+        this.SetTimestamp(new_timestamp);
+        this.SetScoreTotal(new_score_total);
+        if (new_score_summary != "")
+        {
+            this.SetScoreSummary(new_score_summary);
+        }
+    }
+
+    public void SetPlayer(Player new_player)
+    {
+        this.player = new_player;
+    }
+
+    public void SetTimestamp(DateTime new_timestamp)
+    {
+        this.timestamp = new_timestamp;
+    }
+
+    public void SetScoreTotal(int new_score_total)
+    {
+        this.score_total = new_score_total;
+    }
+
+    public void SetScoreSummary(string new_score_summary)
+    {
+        this.score_summary = new_score_summary;
     }
 }
