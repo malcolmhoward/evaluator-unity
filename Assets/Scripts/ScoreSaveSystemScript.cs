@@ -63,3 +63,48 @@ public class ScoreSaveSystemScript : MonoBehaviour {
         save_file_handler.WriteString(written_string);
     }
 }
+
+public class Player
+{
+    public int id;
+    public string first_name;
+    public string last_name;
+    public string display_name;
+
+    // TODO: Overload this constructor so that all arguments aren't needed everytime this method is called
+    public Player(string new_display_name = "", string new_first_name = "", string new_last_name = "", int new_id=0)
+    {
+        if (new_first_name != "")
+        {
+            this.first_name = new_first_name;
+        }
+
+        if (new_last_name != "")
+        {
+            this.last_name = new_last_name;
+        }
+
+        if (new_display_name != "")
+        {
+            this.display_name = new_display_name;
+        }
+        else
+        {
+            string temp_display_name = this.first_name + " " + this.last_name;
+            if (temp_display_name != " ")
+            {
+                this.display_name = temp_display_name;
+            }
+        }
+
+        if (new_id != 0)
+        {
+            this.SetID(new_id);
+        }
+    }
+
+    public void SetID(int new_id)
+    {
+        this.id = new_id;
+    }
+}
