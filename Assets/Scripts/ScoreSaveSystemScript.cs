@@ -22,12 +22,16 @@ public class ScoreSaveSystemScript : MonoBehaviour {
     public TextFileHandler save_file_handler;
     public string score_summary_json;
     public string serialized_score_entry;
-    public ScoreEntry deserialized_score_entry;
+    public ScoreEntry current_score_entry;
+    public List<ScoreEntry> saved_score_entry_list;
+    public int current_score_entry_index;
     public Player current_player;
     public List<Player> player_list;
 
     // Use this for initialization
     void Start () {
+        this.save_file_handler = new TextFileHandler("Assets/Resources/player_scores.csv");
+        this.LoadSavedScores();
         this.InitPlayer();
         this.player_name = GameObject.FindGameObjectsWithTag("PlayerName")[0].GetComponent<Text>().text;
         this.player_score_obj = GameObject.FindGameObjectsWithTag("PlayerScore")[0].GetComponent<Text>();
@@ -44,7 +48,6 @@ public class ScoreSaveSystemScript : MonoBehaviour {
             });
         }
         this.UpdateScoreText();
-        this.save_file_handler = new TextFileHandler("Assets/Resources/player_scores.csv");
         // TODO: Add a save and reset button to the scene
         //this.save_and_reset_button = this.GetComponent<Button>();
         //this.save_and_reset_button.onClick.AddListener(SaveAndReset);
@@ -52,7 +55,7 @@ public class ScoreSaveSystemScript : MonoBehaviour {
 	
 	// Update is called once per frame
 	void Update () {
-
+        // TODO: Figure out why this doesn't work when runnning a standalone game build outside of the editor
         if ((Input.GetKey(KeyCode.RightControl) || Input.GetKey(KeyCode.LeftControl)) && (Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift)))
         {
             //Debug.Log("CTRL + SHIFT hotkey pressed.");
@@ -61,7 +64,6 @@ public class ScoreSaveSystemScript : MonoBehaviour {
                 // CTRL + SHIFT + R
                 Debug.Log("CTRL + SHIFT + R hotkey pressed.");
                 Debug.Log("R hotkey pressed.");
-                Debug.Log("TODO: Make call to SaveAndResetGame()");
                 SaveAndResetGame();
             }
             else if (Input.GetKey(KeyCode.L))
@@ -70,11 +72,61 @@ public class ScoreSaveSystemScript : MonoBehaviour {
                 // This is just a placeholder hotkey used test specific functions on command
                 Debug.Log("CTRL + SHIFT + L hotkey pressed.");
                 Debug.Log("L hotkey pressed.  Reset the scene to the state of the last saved score.");
-                Debug.Log("TODO: Make call to LoadScore()");
-                LoadScore();
+                string loaded_score_summary_string = this.current_score_entry.score_summary;
+                Dictionary<string, List<string>> loaded_score_summary = JsonConvert.DeserializeObject<Dictionary<string, List<string>>>(loaded_score_summary_string);
+                this.LoadScore(loaded_score_summary:loaded_score_summary);
             }
             
         }
+    }
+
+    //void OnGUI()
+    //{
+    //    TODO: Figure out why this doesn't work when runnning a standalone game build outside of the editor
+    //    Event e = Event.current;
+    //    // Only check one key release (i.e. EventType.KeyUp) instead of key press to prevent this from executing multiple times
+    //    if (e.type == EventType.KeyUp)
+    //    {
+    //        if (e.shift && e.control)
+    //        {
+    //            //Debug.Log("CTRL + SHIFT hotkey pressed.");
+    //            if (e.keyCode == KeyCode.R)
+    //            {
+    //                // CTRL + SHIFT + R
+    //                Debug.Log("CTRL + SHIFT + R hotkey pressed.");
+    //                Debug.Log("R hotkey pressed.");
+    //                Debug.Log("TODO: Make call to SaveAndResetGame()");
+    //                SaveAndResetGame();
+    //            }
+    //            else if (e.keyCode == KeyCode.L)
+    //            {
+    //                // CTRL + SHIFT + L
+    //                // This is just a placeholder hotkey used test specific functions on command
+    //                Debug.Log("CTRL + SHIFT + L hotkey pressed.");
+    //                Debug.Log("L hotkey pressed.  Reset the scene to the state of the last saved score.");
+    //                Debug.Log("TODO: Make call to LoadScore()");
+    //                LoadScore();
+    //            }
+    //        }
+    //    }
+    //}
+
+    public void LoadSavedScores()
+    {
+        Debug.Log("LoadSavedScores() called");
+        this.saved_score_entry_list = new List<ScoreEntry>();
+        string file_contents_string = this.save_file_handler.Read();
+        List<string> file_contents_list = this.save_file_handler.ParseFileContents(file_contents_string:file_contents_string);
+        foreach (string saved_score_entry_json in file_contents_list)
+        {
+            if (saved_score_entry_json != "")
+            {
+                ScoreEntry loaded_score_entry = JsonConvert.DeserializeObject<ScoreEntry>(saved_score_entry_json);
+                this.saved_score_entry_list.Add(loaded_score_entry);
+            }
+        }
+        this.current_score_entry_index = this.saved_score_entry_list.Count - 1;
+        this.current_score_entry = this.saved_score_entry_list[this.current_score_entry_index];
     }
 
     public void SaveAndResetGame()
@@ -143,24 +195,25 @@ public class ScoreSaveSystemScript : MonoBehaviour {
         this.InitToggleStateDictionary(force_reset: true);
         this.UpdateToggleStateDictionary();
         ScoreEntry current_score_entry = new ScoreEntry(new_player: this.current_player, new_timestamp: timestamp, new_score_total: this.points_earned, new_score_summary: this.score_summary_json);
+        this.saved_score_entry_list.Add(current_score_entry);
         // TODO: Implement the following score serialization logic in a SerializeScore() method
         this.serialized_score_entry = JsonConvert.SerializeObject(current_score_entry);
         // TODO: Update DeserializeScore() method to support ScoreEntry instances
-        this.deserialized_score_entry = JsonConvert.DeserializeObject<ScoreEntry>(this.serialized_score_entry);
+        this.current_score_entry = JsonConvert.DeserializeObject<ScoreEntry>(this.serialized_score_entry);
         this.save_file_handler.WriteString(this.serialized_score_entry);
     }
 
-    public void LoadScore(Dictionary<string, List<string>> loaded_score_summary = null)
+    public void LoadScore(Dictionary<string, List<string>> loaded_score_summary=null, int loaded_score_summary_index=0)
     {
         // Reloads the scene with the state of the most recently saved score
-        Debug.Log("Now loading: deserialized_score_entry...");
+        Debug.Log("Now loading: current_score_entry...");
 
         // loaded_score_summary is of type Dictionary<string, List<string>>, just like the toggle_name_dictionary
-        if (loaded_score_summary == null && this.deserialized_score_entry != null)
+        if (loaded_score_summary == null && this.current_score_entry != null)
         {
             // This method can be optionally called with a score summary instance.  If so, then load that instance's state into the scene.
-            // If not, then use the most recently saved score summary, if it exists (i.e. this.deserialized_score_entry).
-            string loaded_score_summary_string = this.deserialized_score_entry.score_summary;
+            // If not, then use the most recently saved score summary, if it exists (i.e. this.current_score_entry).
+            string loaded_score_summary_string = this.current_score_entry.score_summary;
             loaded_score_summary = JsonConvert.DeserializeObject<Dictionary<string, List<string>>>(loaded_score_summary_string);
         }
 
@@ -192,6 +245,14 @@ public class ScoreSaveSystemScript : MonoBehaviour {
                 }
                 // Update the score with the point value of this toggle if it was checked
                 this.UpdateScoreText();
+            }
+            if (loaded_score_summary_index != 0)
+            {
+                this.current_score_entry_index = loaded_score_summary_index - 1;
+            }
+            else
+            {
+                this.current_score_entry_index = this.saved_score_entry_list.Count - 1;
             }
         }
         else

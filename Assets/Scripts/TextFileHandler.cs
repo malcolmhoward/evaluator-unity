@@ -1,6 +1,7 @@
 ﻿// Based off of https://support.unity3d.com/hc/en-us/articles/115000341143-How-do-I-read-and-write-data-from-a-text-file-
 using UnityEngine;
 using UnityEditor;
+using System.Collections.Generic;
 using System.IO;
 
 public class TextFileHandler
@@ -57,8 +58,31 @@ public class TextFileHandler
 
         return read_string;
     }
-    
-    // TODO: Create the method ReadFileData() that returns a list of strings
+
+    public string Read()
+    {
+        //string path = "Assets/Resources/test.txt";
+
+        //Read the text from directly from the test.txt file
+        StreamReader reader = new StreamReader(this.path);
+        string file_contents_string = reader.ReadToEnd();
+
+        Debug.Log(file_contents_string);
+        reader.Close();
+
+        return file_contents_string;
+    }
+
+    public List<string> ParseFileContents(string file_contents_string)
+    {
+        // Convert file contents string to an array of strings
+        StreamReader reader = new StreamReader(this.path);
+        string[] file_contents_arrary = file_contents_string.Split('\n');
+        List<string> file_contents_list = new List<string>(file_contents_arrary);
+        Debug.Log(file_contents_list);
+
+        return file_contents_list;
+    }
 }
 
 //For more information, consult the following documentation:
