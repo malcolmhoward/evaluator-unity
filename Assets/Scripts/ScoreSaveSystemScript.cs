@@ -32,9 +32,10 @@ public class ScoreSaveSystemScript : MonoBehaviour {
         this.player_name = GameObject.FindGameObjectsWithTag("PlayerName")[0].GetComponent<Text>().text;
         this.player_score_obj = GameObject.FindGameObjectsWithTag("PlayerScore")[0].GetComponent<Text>();
         Debug.Log(this.player_name);
+        // Create the toggle_list before doing anything else related to the toggle_list
+        this.toggle_list = GameObject.FindObjectsOfType<Toggle>();
         this.InitToggleNameDictionary();
         this.InitToggleStateDictionary();
-        this.toggle_list = GameObject.FindObjectsOfType<Toggle>();
         foreach (Toggle toggle in this.toggle_list)
         {
             //Add listener for when the state of the Toggle changes, to take action
@@ -114,7 +115,7 @@ public class ScoreSaveSystemScript : MonoBehaviour {
         // Set all of the toggle objects to off, and the call UpdateScoreText
         this.points_earned = 0;
         this.UpdateScoreText();
-        // Reset the button_score_name_dictionary to its initial value
+        // Reset the toggle_name_dictionary to its initial value
         this.InitToggleNameDictionary(force_reset:true);
     }
 
@@ -166,7 +167,7 @@ public class ScoreSaveSystemScript : MonoBehaviour {
         // Make sure there's a loaded score summary before trying to process it.  It's null by default.
         if (loaded_score_summary != null)
         {
-            // TODO: Reset the score first to prevent the score from duplicating on top of the current score in the scene
+            // Reset the score first to prevent the score from duplicating on top of the current score in the scene
             this.ResetScore();
             foreach (KeyValuePair<string, List<string>> toggle_name_list in loaded_score_summary)
             {
@@ -186,7 +187,7 @@ public class ScoreSaveSystemScript : MonoBehaviour {
                     // TODO: Create another solution for retrieving the toggle object by name
                     // Toggle current_toggle = GameObject.Find(toggle_name).GetComponent<Toggle>();
                     // this.SetToggleState(current_toggle:current_toggle, is_on:toggle_state); 
-                    Toggle current_toggle = toggle_name_dictionary[toggle_name];
+                    Toggle current_toggle = this.toggle_name_dictionary[toggle_name];
                     this.SetToggleState(current_toggle:current_toggle, is_on:toggle_state);                    
                 }
                 // Update the score with the point value of this toggle if it was checked
@@ -198,12 +199,19 @@ public class ScoreSaveSystemScript : MonoBehaviour {
             Debug.Log("Warning: You're attempting to load a score when one has not been provided. Try saving first with Control+Shift+R...");
         }
     }
+
     public void InitToggleNameDictionary(bool force_reset = false)
     {
         bool toggle_dictionary_is_empty = this.toggle_name_dictionary.Count == 0;
         if (toggle_dictionary_is_empty || force_reset)
         {
             this.toggle_name_dictionary = new Dictionary<string, Toggle>();
+            foreach (Toggle current_toggle in this.toggle_list)
+            {
+                string toggle_name_string = current_toggle.name;
+                current_toggle.isOn = false;
+                this.toggle_name_dictionary[toggle_name_string] = current_toggle;
+            }
         }
     }
 
@@ -221,8 +229,8 @@ public class ScoreSaveSystemScript : MonoBehaviour {
 
     public void SetToggleState(Toggle current_toggle, bool is_on = false)
     {
+        // Update the state of the current_toggle, including the image of the Checkmark on the Toggle Background
         current_toggle.isOn = is_on;
-        // TODO: Need to update the image on the Checkmark on the Toggle Background
     }
 
     public void InitPlayer()
