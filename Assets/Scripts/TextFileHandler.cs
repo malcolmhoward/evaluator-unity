@@ -76,7 +76,6 @@ public class TextFileHandler
     public List<string> ParseFileContents(string file_contents_string)
     {
         // Convert file contents string to an array of strings
-        StreamReader reader = new StreamReader(this.path);
         string[] file_contents_arrary = file_contents_string.Split('\n');
         List<string> file_contents_list = new List<string>(file_contents_arrary);
         Debug.Log(file_contents_list);

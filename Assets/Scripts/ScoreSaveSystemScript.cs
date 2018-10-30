@@ -33,9 +33,6 @@ public class ScoreSaveSystemScript : MonoBehaviour {
         this.save_file_handler = new TextFileHandler("Assets/Resources/player_scores.csv");
         this.LoadSavedScores();
         this.InitPlayer();
-        this.player_name = GameObject.FindGameObjectsWithTag("PlayerName")[0].GetComponent<Text>().text;
-        this.player_score_obj = GameObject.FindGameObjectsWithTag("PlayerScore")[0].GetComponent<Text>();
-        Debug.Log(this.player_name);
         // Create the toggle_list before doing anything else related to the toggle_list
         this.toggle_list = GameObject.FindObjectsOfType<Toggle>();
         this.InitToggleNameDictionary();
@@ -52,64 +49,71 @@ public class ScoreSaveSystemScript : MonoBehaviour {
         //this.save_and_reset_button = this.GetComponent<Button>();
         //this.save_and_reset_button.onClick.AddListener(SaveAndReset);
 	}
-	
-	// Update is called once per frame
-	void Update () {
+
+    //// Update is called once per frame
+    //void Update () {
+    //       // TODO: Figure out why this doesn't work when runnning a standalone game build outside of the editor
+    //       if ((Input.GetKey(KeyCode.RightControl) || Input.GetKey(KeyCode.LeftControl)) && (Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift)))
+    //       {
+    //           //Debug.Log("CTRL + SHIFT hotkey pressed.");
+    //           if (Input.GetKeyDown(KeyCode.R))
+    //           {
+    //               // CTRL + SHIFT + R
+    //               Debug.Log("CTRL + SHIFT + R hotkey pressed.");
+    //               Debug.Log("R hotkey pressed.");
+    //               SaveAndResetGame();
+    //           }
+    //           else if (Input.GetKey(KeyCode.L))
+    //           {
+    //               // CTRL + SHIFT + L
+    //               // This is just a placeholder hotkey used test specific functions on command
+    //               Debug.Log("CTRL + SHIFT + L hotkey pressed.");
+    //               Debug.Log("L hotkey pressed.  Reset the scene to the state of the last saved score.");
+    //               string loaded_score_summary_string = this.current_score_entry.score_summary;
+    //               Dictionary<string, List<string>> loaded_score_summary = JsonConvert.DeserializeObject<Dictionary<string, List<string>>>(loaded_score_summary_string);
+    //               this.LoadScore(loaded_score_summary:loaded_score_summary, loaded_score_summary_index:this.current_score_entry_index);
+    //           }
+
+    //       }
+    //   }
+
+    void OnGUI()
+    {
         // TODO: Figure out why this doesn't work when runnning a standalone game build outside of the editor
-        if ((Input.GetKey(KeyCode.RightControl) || Input.GetKey(KeyCode.LeftControl)) && (Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift)))
+        Event e = Event.current;
+        // Only check one key release (i.e. EventType.KeyUp) instead of key press to prevent this from executing multiple times
+        if (e.type == EventType.KeyUp)
         {
-            //Debug.Log("CTRL + SHIFT hotkey pressed.");
-            if (Input.GetKeyDown(KeyCode.R))
+            if (e.shift && e.control)
             {
-                // CTRL + SHIFT + R
-                Debug.Log("CTRL + SHIFT + R hotkey pressed.");
-                Debug.Log("R hotkey pressed.");
-                SaveAndResetGame();
+                //Debug.Log("CTRL + SHIFT hotkey pressed.");
+                if (e.keyCode == KeyCode.R)
+                {
+                    // CTRL + SHIFT + R
+                    Debug.Log("CTRL + SHIFT + R hotkey pressed.");
+                    Debug.Log("R hotkey pressed.");
+                    SaveAndResetGame();
+                }
+                else if (e.keyCode == KeyCode.L)
+                {
+                    // CTRL + SHIFT + L
+                    // This is just a placeholder hotkey used test specific functions on command
+                    Debug.Log("CTRL + SHIFT + L hotkey pressed.");
+                    Debug.Log("L hotkey pressed.  Reset the scene to the state of the last saved score.");
+                    if (this.current_score_entry != null)
+                    {
+                        string loaded_score_summary_string = this.current_score_entry.score_summary;
+                        Dictionary<string, List<string>> loaded_score_summary = JsonConvert.DeserializeObject<Dictionary<string, List<string>>>(loaded_score_summary_string);
+                        this.LoadScore(loaded_score_summary: loaded_score_summary, loaded_score_summary_index: this.current_score_entry_index);
+                    }
+                    else
+                    {
+                        Debug.Log("Warning: You're attempting to load a saved score when one is not available.  Try saving first with Control+Shift+R...");
+                    }
+                }
             }
-            else if (Input.GetKey(KeyCode.L))
-            {
-                // CTRL + SHIFT + L
-                // This is just a placeholder hotkey used test specific functions on command
-                Debug.Log("CTRL + SHIFT + L hotkey pressed.");
-                Debug.Log("L hotkey pressed.  Reset the scene to the state of the last saved score.");
-                string loaded_score_summary_string = this.current_score_entry.score_summary;
-                Dictionary<string, List<string>> loaded_score_summary = JsonConvert.DeserializeObject<Dictionary<string, List<string>>>(loaded_score_summary_string);
-                this.LoadScore(loaded_score_summary:loaded_score_summary);
-            }
-            
         }
     }
-
-    //void OnGUI()
-    //{
-    //    TODO: Figure out why this doesn't work when runnning a standalone game build outside of the editor
-    //    Event e = Event.current;
-    //    // Only check one key release (i.e. EventType.KeyUp) instead of key press to prevent this from executing multiple times
-    //    if (e.type == EventType.KeyUp)
-    //    {
-    //        if (e.shift && e.control)
-    //        {
-    //            //Debug.Log("CTRL + SHIFT hotkey pressed.");
-    //            if (e.keyCode == KeyCode.R)
-    //            {
-    //                // CTRL + SHIFT + R
-    //                Debug.Log("CTRL + SHIFT + R hotkey pressed.");
-    //                Debug.Log("R hotkey pressed.");
-    //                Debug.Log("TODO: Make call to SaveAndResetGame()");
-    //                SaveAndResetGame();
-    //            }
-    //            else if (e.keyCode == KeyCode.L)
-    //            {
-    //                // CTRL + SHIFT + L
-    //                // This is just a placeholder hotkey used test specific functions on command
-    //                Debug.Log("CTRL + SHIFT + L hotkey pressed.");
-    //                Debug.Log("L hotkey pressed.  Reset the scene to the state of the last saved score.");
-    //                Debug.Log("TODO: Make call to LoadScore()");
-    //                LoadScore();
-    //            }
-    //        }
-    //    }
-    //}
 
     public void LoadSavedScores()
     {
@@ -125,8 +129,13 @@ public class ScoreSaveSystemScript : MonoBehaviour {
                 this.saved_score_entry_list.Add(loaded_score_entry);
             }
         }
-        this.current_score_entry_index = this.saved_score_entry_list.Count - 1;
-        this.current_score_entry = this.saved_score_entry_list[this.current_score_entry_index];
+        
+        // Only load a score entry if one has been saved
+        if (this.saved_score_entry_list.Count != 0)
+        {
+            this.current_score_entry_index = this.saved_score_entry_list.Count - 1;
+            this.current_score_entry = this.saved_score_entry_list[this.current_score_entry_index];
+        }
     }
 
     public void SaveAndResetGame()
@@ -148,8 +157,11 @@ public class ScoreSaveSystemScript : MonoBehaviour {
             }
         }
         this.player_score_text = string.Format("{0}/{1}", points_earned, points_possible);
-        Debug.Log(this.player_score_text);
-        this.player_score_obj.text = player_score_text;
+        // Debug.Log(this.player_score_text);
+        if (this.player_score_obj != null)
+        {
+            this.player_score_obj.text = player_score_text;
+        }
     }
 
     public void SaveAndReset()
@@ -196,10 +208,12 @@ public class ScoreSaveSystemScript : MonoBehaviour {
         this.UpdateToggleStateDictionary();
         ScoreEntry current_score_entry = new ScoreEntry(new_player: this.current_player, new_timestamp: timestamp, new_score_total: this.points_earned, new_score_summary: this.score_summary_json);
         this.saved_score_entry_list.Add(current_score_entry);
+        this.current_score_entry = current_score_entry;
+        this.current_score_entry_index = this.saved_score_entry_list.Count - 1;
         // TODO: Implement the following score serialization logic in a SerializeScore() method
         this.serialized_score_entry = JsonConvert.SerializeObject(current_score_entry);
         // TODO: Update DeserializeScore() method to support ScoreEntry instances
-        this.current_score_entry = JsonConvert.DeserializeObject<ScoreEntry>(this.serialized_score_entry);
+        // this.current_score_entry = JsonConvert.DeserializeObject<ScoreEntry>(this.serialized_score_entry);
         this.save_file_handler.WriteString(this.serialized_score_entry);
     }
 
@@ -252,8 +266,10 @@ public class ScoreSaveSystemScript : MonoBehaviour {
             }
             else
             {
+                // The oldest saved score has been loaded, so loop back to the newest one
                 this.current_score_entry_index = this.saved_score_entry_list.Count - 1;
             }
+            this.current_score_entry = this.saved_score_entry_list[this.current_score_entry_index];
         }
         else
         {
@@ -305,7 +321,39 @@ public class ScoreSaveSystemScript : MonoBehaviour {
         //Debug.Log(current_player.first_name);
         //Debug.Log(current_player.last_name);
         //Debug.Log(current_player.id);
+        this.InitPlayerScoreAndNameText();
         Debug.Log("player_list and current_player created successfully!");
+    }
+
+    public void InitPlayerScoreAndNameText()
+    {
+        try
+        {
+            // this.player_name = GameObject.FindGameObjectsWithTag("PlayerName")[0].GetComponent<Text>().text;
+            // this.player_score_obj = GameObject.FindGameObjectsWithTag("PlayerScore")[0].GetComponent<Text>();
+            this.player_name = GameObject.FindGameObjectWithTag("PlayerName").GetComponent<Text>().text;
+            this.player_score_obj = GameObject.FindGameObjectWithTag("PlayerScore").GetComponent<Text>();
+        }
+        catch (UnityException ex)
+        {
+            // UnityException: Tag: PlayerName is not defined.
+            // UnityException: Tag: PlayerScore is not defined.
+            // Prevent the script from crashing if the 'PlayerName' and 'PlayerScore' tags are not defined
+            this.player_name = "Player Name";
+            this.player_score_obj = null;
+            //Debug.Log(ex.ToString());
+            Debug.Log("Either the PlayerName or the PlayerScore tag is not defined, so continue without it.");
+        }
+        catch (System.NullReferenceException ex)
+        {
+            // NullReferenceException: Object reference not set to an instance of an object
+            // Prevent the script from crashing if the 'PlayerName' and 'PlayerScore' tags are defined, but the necessary objects are not tagged with them
+            this.player_name = "Player Name";
+            this.player_score_obj = null;
+            // Debug.Log(ex.ToString());
+            Debug.Log("The PlayerName or the PlayerScore tag is defined, but it's not in use, so continue without them.");
+        }
+        Debug.Log(this.player_name);
     }
 }
 
