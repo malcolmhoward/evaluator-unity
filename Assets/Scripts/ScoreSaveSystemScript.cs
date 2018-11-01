@@ -22,8 +22,8 @@ public class ScoreSaveSystemScript : MonoBehaviour {
     public TextFileHandler save_file_handler;
     public string score_summary_json;
     public string serialized_score_entry;
-    public ScoreEntry current_score_entry;
-    public List<ScoreEntry> saved_score_entry_list;
+    public PlayerScoreEntry current_score_entry;
+    public List<PlayerScoreEntry> saved_score_entry_list;
     public int current_score_entry_index;
     public Player current_player;
     public List<Player> player_list;
@@ -118,14 +118,14 @@ public class ScoreSaveSystemScript : MonoBehaviour {
     public void LoadSavedScores()
     {
         Debug.Log("LoadSavedScores() called");
-        this.saved_score_entry_list = new List<ScoreEntry>();
+        this.saved_score_entry_list = new List<PlayerScoreEntry>();
         string file_contents_string = this.save_file_handler.Read();
         List<string> file_contents_list = this.save_file_handler.ParseFileContents(file_contents_string:file_contents_string);
         foreach (string saved_score_entry_json in file_contents_list)
         {
             if (saved_score_entry_json != "")
             {
-                ScoreEntry loaded_score_entry = JsonConvert.DeserializeObject<ScoreEntry>(saved_score_entry_json);
+                PlayerScoreEntry loaded_score_entry = JsonConvert.DeserializeObject<PlayerScoreEntry>(saved_score_entry_json);
                 this.saved_score_entry_list.Add(loaded_score_entry);
             }
         }
@@ -206,7 +206,7 @@ public class ScoreSaveSystemScript : MonoBehaviour {
         DateTime timestamp = System.DateTime.UtcNow;
         this.InitToggleStateDictionary(force_reset: true);
         this.UpdateToggleStateDictionary();
-        ScoreEntry current_score_entry = new ScoreEntry(new_player: this.current_player, new_timestamp: timestamp, new_score_total: this.points_earned, new_score_summary: this.score_summary_json);
+        PlayerScoreEntry current_score_entry = new PlayerScoreEntry(new_player: this.current_player, new_timestamp: timestamp, new_score_total: this.points_earned, new_score_summary: this.score_summary_json);
         this.saved_score_entry_list.Add(current_score_entry);
         this.current_score_entry = current_score_entry;
         this.current_score_entry_index = this.saved_score_entry_list.Count - 1;
@@ -404,25 +404,19 @@ public class Player
 
 public class ScoreEntry
 {
-    public Player player;
     public DateTime timestamp;
     public int score_total;
     public string score_summary;
 
-    public ScoreEntry(Player new_player, DateTime new_timestamp, int new_score_total, string new_score_summary="")
+    public ScoreEntry(DateTime new_timestamp, int new_score_total, string new_score_summary="")
     {
-        this.SetPlayer(new_player);
+        
         this.SetTimestamp(new_timestamp);
         this.SetScoreTotal(new_score_total);
         if (new_score_summary != "")
         {
             this.SetScoreSummary(new_score_summary);
         }
-    }
-
-    public void SetPlayer(Player new_player)
-    {
-        this.player = new_player;
     }
 
     public void SetTimestamp(DateTime new_timestamp)
@@ -438,5 +432,29 @@ public class ScoreEntry
     public void SetScoreSummary(string new_score_summary)
     {
         this.score_summary = new_score_summary;
+    }
+}
+
+public class PlayerScoreEntry : ScoreEntry
+{
+
+    //public DateTime timestamp;
+    //public int score_total;
+    //public string score_summary;
+    // ^^^^^ The above attributes are inherited from the parent/base class ScoreEntry.
+    // They're commented out here for reference.
+    public Player player;
+
+
+    public PlayerScoreEntry(Player new_player, DateTime new_timestamp, int new_score_total, string new_score_summary = "") : base(new_timestamp, new_score_total, new_score_summary)
+    {
+        // This is the constructor for the PlayerScoreEntry class, which also immedialtey calls the constructor to the parent/base class (i.e. ScoreEntry)
+        Debug.Log("PlayerScoreEntry constructor called");
+        this.SetPlayer(new_player);
+    }
+
+    public void SetPlayer(Player new_player)
+    {
+        this.player = new_player;
     }
 }
