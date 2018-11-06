@@ -86,7 +86,7 @@ public class ScoreSaveSystemScript : MonoBehaviour {
         {
             if (e.shift && e.control)
             {
-                //Debug.Log("CTRL + SHIFT hotkey pressed.");
+                Debug.Log("CTRL + SHIFT hotkey pressed.");
                 if (e.keyCode == KeyCode.R)
                 {
                     // CTRL + SHIFT + R
@@ -94,22 +94,34 @@ public class ScoreSaveSystemScript : MonoBehaviour {
                     Debug.Log("R hotkey pressed.");
                     SaveAndResetGame();
                 }
-                else if (e.keyCode == KeyCode.L)
+            }
+            else if (e.keyCode == KeyCode.LeftArrow || e.keyCode == KeyCode.RightArrow)
+            {
+                // CTRL + SHIFT + LeftArrow or CTRL + SHIFT + RightArrow
+                // This is just a placeholder hotkey used test specific functions on command
+                string next_score_location = "left";
+                if (e.keyCode == KeyCode.LeftArrow)
                 {
-                    // CTRL + SHIFT + L
-                    // This is just a placeholder hotkey used test specific functions on command
-                    Debug.Log("CTRL + SHIFT + L hotkey pressed.");
-                    Debug.Log("L hotkey pressed.  Reset the scene to the state of the last saved score.");
-                    if (this.current_score_entry != null)
-                    {
-                        string loaded_score_summary_string = this.current_score_entry.score_summary;
-                        Dictionary<string, List<string>> loaded_score_summary = JsonConvert.DeserializeObject<Dictionary<string, List<string>>>(loaded_score_summary_string);
-                        this.LoadScore(loaded_score_summary: loaded_score_summary, loaded_score_summary_index: this.current_score_entry_index);
-                    }
-                    else
-                    {
-                        Debug.Log("Warning: You're attempting to load a saved score when one is not available.  Try saving first with Control+Shift+R...");
-                    }
+                    // Debug.Log("CTRL + SHIFT + LeftArrow hotkey pressed.");
+                    Debug.Log("LeftArrow hotkey pressed.");
+                }
+                else if (e.keyCode == KeyCode.RightArrow)
+                {
+                    // Debug.Log("CTRL + SHIFT + RighttArrow hotkey pressed.");
+                    Debug.Log("RighttArrow hotkey pressed.");
+                    next_score_location = "right";
+                }
+                // Debug.Log("CTRL + SHIFT + L hotkey pressed.");
+                // Debug.Log("L hotkey pressed.  Reset the scene to the state of the last saved score.");
+                if (this.current_score_entry != null)
+                {
+                    string loaded_score_summary_string = this.current_score_entry.score_summary;
+                    Dictionary<string, List<string>> loaded_score_summary = JsonConvert.DeserializeObject<Dictionary<string, List<string>>>(loaded_score_summary_string);
+                    this.LoadScore(loaded_score_summary: loaded_score_summary, next_score_location: next_score_location);
+                }
+                else
+                {
+                    Debug.Log("Warning: You're attempting to load a saved score when one is not available.  Try saving first with Control+Shift+R...");
                 }
             }
         }
@@ -217,7 +229,7 @@ public class ScoreSaveSystemScript : MonoBehaviour {
         this.save_file_handler.WriteString(this.serialized_score_entry);
     }
 
-    public void LoadScore(Dictionary<string, List<string>> loaded_score_summary=null, int loaded_score_summary_index=0)
+    public void LoadScore(Dictionary<string, List<string>> loaded_score_summary=null, int loaded_score_summary_index=0, string next_score_location="left")
     {
         // Reloads the scene with the state of the most recently saved score
         Debug.Log("Now loading: current_score_entry...");
@@ -260,15 +272,31 @@ public class ScoreSaveSystemScript : MonoBehaviour {
                 // Update the score with the point value of this toggle if it was checked
                 this.UpdateScoreText();
             }
-            if (loaded_score_summary_index != 0)
-            {
-                this.current_score_entry_index = loaded_score_summary_index - 1;
-            }
-            else
+            if (loaded_score_summary_index == 0 && next_score_location == "left")
             {
                 // The oldest saved score has been loaded, so loop back to the newest one
                 this.current_score_entry_index = this.saved_score_entry_list.Count - 1;
             }
+            else if (loaded_score_summary_index == this.saved_score_entry_list.Count - 1 && next_score_location == "right")
+            {
+                // The newest saved score has been loaded, so loop back to the oldest one
+                this.current_score_entry_index = 0;
+            }
+            else
+            {
+                // Select the next score index based on the intended direction
+                int relative_index_location = 0;
+                if (next_score_location == "left")
+                {
+                    relative_index_location = -1;
+                }
+                else if (next_score_location == "right")
+                {
+                    relative_index_location = 1;
+                }
+                this.current_score_entry_index = loaded_score_summary_index + relative_index_location;
+            }
+            
             this.current_score_entry = this.saved_score_entry_list[this.current_score_entry_index];
         }
         else
