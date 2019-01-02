@@ -255,6 +255,9 @@ public class ScoreSaveSystemScript : MonoBehaviour {
         // TODO: Update DeserializeScore() method to support ScoreEntry instances
         // this.current_score_entry = JsonConvert.DeserializeObject<ScoreEntry>(this.serialized_score_entry);
         this.save_file_handler.WriteString(this.serialized_score_entry);
+        // The score has been saved to the score save file
+        // Reload the saved scores to reset the saved_score_entry_list
+        LoadSavedScores();
     }
 
     public void LoadScore(Dictionary<string, List<string>> loaded_score_summary=null, int loaded_score_summary_index=0, string next_score_location=null)
