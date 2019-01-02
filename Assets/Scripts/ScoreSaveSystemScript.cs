@@ -153,12 +153,19 @@ public class ScoreSaveSystemScript : MonoBehaviour {
     //    }
     //}
 
-    public void LoadSavedScores()
+    public void LoadSavedScores(List<string> scores_to_load=null)
     {
         Debug.Log("LoadSavedScores() called");
-        this.saved_score_entry_list = new List<PlayerScoreEntry>();
-        string file_contents_string = this.save_file_handler.Read();
-        List<string> file_contents_list = this.save_file_handler.ParseFileContents(file_contents_string:file_contents_string);
+        List<string> file_contents_list = scores_to_load;
+        if (file_contents_list == null)
+        {
+            // Calling LoadSavedScores() all the time seems kinda wasteful, since most of the work is already done on Start()
+            // TODO: Only load the save file if no saved/serialized scores have been provided to this method
+            this.saved_score_entry_list = new List<PlayerScoreEntry>();
+            string file_contents_string = this.save_file_handler.Read();
+            file_contents_list = this.save_file_handler.ParseFileContents(file_contents_string: file_contents_string);
+        }
+        
         foreach (string saved_score_entry_json in file_contents_list)
         {
             if (saved_score_entry_json != "")
@@ -251,8 +258,10 @@ public class ScoreSaveSystemScript : MonoBehaviour {
         // this.current_score_entry = JsonConvert.DeserializeObject<ScoreEntry>(this.serialized_score_entry);
         this.save_file_handler.WriteString(this.serialized_score_entry);
         // The score has been saved to the score save file
-        // Reload the saved scores to reset the saved_score_entry_list
-        LoadSavedScores();
+        // Load the saved score to update the saved_score_entry_list
+        List<string> newly_save_scores = new List<string>();
+        newly_save_scores.Add(this.serialized_score_entry);
+        LoadSavedScores(scores_to_load:newly_save_scores);
     }
 
     public void LoadScore(Dictionary<string, List<string>> loaded_score_summary=null, int loaded_score_summary_index=0, string next_score_location=null)
