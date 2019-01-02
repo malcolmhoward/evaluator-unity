@@ -64,27 +64,22 @@ public class ScoreSaveSystemScript : MonoBehaviour {
             //    Debug.Log("R hotkey pressed.");
             //    SaveAndResetGame();
             //}
-            //else if (Input.GetKeyUp(KeyCode.L))
-            //{
-            //    // CTRL + SHIFT + L
-            //    // This is just a placeholder hotkey used test specific functions on command
-            //    Debug.Log("CTRL + SHIFT + L hotkey pressed.");
-            //    Debug.Log("L hotkey pressed.  Reset the scene to the state of the last saved score.");
-            //    string loaded_score_summary_string = this.current_score_entry.score_summary;
-            //    Dictionary<string, List<string>> loaded_score_summary = JsonConvert.DeserializeObject<Dictionary<string, List<string>>>(loaded_score_summary_string);
-            //    this.LoadScore(loaded_score_summary: loaded_score_summary, loaded_score_summary_index: this.current_score_entry_index);
-            //}
 
             // We use GetKeyUp() here instead of GetKey() or GetKeyDown() so that we only watch for the moment when keys are released
             // Otherwise, the following logic might fire for every frame that all of the relevant keys are pressed
             // That is the opposite of what we want in this case
-            if (Input.GetKeyUp(KeyCode.LeftArrow) || Input.GetKeyUp(KeyCode.RightArrow))
+            if (Input.GetKeyUp(KeyCode.L) || Input.GetKeyUp(KeyCode.LeftArrow) || Input.GetKeyUp(KeyCode.RightArrow))
             {
-                Debug.Log("LeftArrow or RightArrow hotkey pressed.");
-                // CTRL + SHIFT + LeftArrow or CTRL + SHIFT + RightArrow
+                Debug.Log("L, LeftArrow, or RightArrow hotkey pressed.");
+                // CTRL + SHIFT + L or CTRL + SHIFT + LeftArrow or CTRL + SHIFT + RightArrow
                 // This is just a placeholder hotkey used test specific functions on command
                 string next_score_location = "left";
-                if (Input.GetKeyUp(KeyCode.LeftArrow))
+                if (Input.GetKeyUp(KeyCode.L))
+                {
+                    Debug.Log("CTRL + SHIFT + L hotkey pressed.");
+                    //Debug.Log("L hotkey pressed. Reset the scene to the state of the last saved score.");
+                }
+                else if (Input.GetKeyUp(KeyCode.LeftArrow))
                 {
                     Debug.Log("CTRL + SHIFT + LeftArrow hotkey pressed.");
                     //Debug.Log("LeftArrow hotkey pressed. Reset the scene to the state of the previously saved score.");
