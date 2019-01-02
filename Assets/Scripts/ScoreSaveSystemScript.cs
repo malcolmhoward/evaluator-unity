@@ -30,7 +30,7 @@ public class ScoreSaveSystemScript : MonoBehaviour {
 
     // Use this for initialization
     void Start () {
-        this.save_file_handler = new TextFileHandler("Assets/Resources/player_scores.csv");
+        this.save_file_handler = new TextFileHandler("Assets/Resources/player_scores.txt");
         this.LoadSavedScores();
         this.InitPlayer();
         // Create the toggle_list before doing anything else related to the toggle_list
@@ -50,74 +50,55 @@ public class ScoreSaveSystemScript : MonoBehaviour {
         //this.save_and_reset_button.onClick.AddListener(SaveAndReset);
 	}
 
-    //// Update is called once per frame
-    //void Update () {
-    //       // TODO: Figure out why this doesn't work when runnning a standalone game build outside of the editor
-    //       if ((Input.GetKey(KeyCode.RightControl) || Input.GetKey(KeyCode.LeftControl)) && (Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift)))
-    //       {
-    //           //Debug.Log("CTRL + SHIFT hotkey pressed.");
-    //           if (Input.GetKeyDown(KeyCode.R))
-    //           {
-    //               // CTRL + SHIFT + R
-    //               Debug.Log("CTRL + SHIFT + R hotkey pressed.");
-    //               Debug.Log("R hotkey pressed.");
-    //               SaveAndResetGame();
-    //           }
-    //           else if (Input.GetKey(KeyCode.L))
-    //           {
-    //               // CTRL + SHIFT + L
-    //               // This is just a placeholder hotkey used test specific functions on command
-    //               Debug.Log("CTRL + SHIFT + L hotkey pressed.");
-    //               Debug.Log("L hotkey pressed.  Reset the scene to the state of the last saved score.");
-    //               string loaded_score_summary_string = this.current_score_entry.score_summary;
-    //               Dictionary<string, List<string>> loaded_score_summary = JsonConvert.DeserializeObject<Dictionary<string, List<string>>>(loaded_score_summary_string);
-    //               this.LoadScore(loaded_score_summary:loaded_score_summary, loaded_score_summary_index:this.current_score_entry_index);
-    //           }
-
-    //       }
-    //   }
-
-    void OnGUI()
+    // Update is called once per frame
+    void Update()
     {
         // TODO: Figure out why this doesn't work when runnning a standalone game build outside of the editor
-        Event e = Event.current;
-        // Only check one key release (i.e. EventType.KeyUp) instead of key press to prevent this from executing multiple times
-        if (e.type == EventType.KeyUp)
+        if ((Input.GetKey(KeyCode.RightControl) || Input.GetKey(KeyCode.LeftControl)) && (Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift)))
         {
-            if (e.shift && e.control)
+            Debug.Log("CTRL + SHIFT hotkey pressed.");
+            //if (Input.GetKeyUp(KeyCode.R))
+            //{
+            //    // CTRL + SHIFT + R
+            //    Debug.Log("CTRL + SHIFT + R hotkey pressed.");
+            //    Debug.Log("R hotkey pressed.");
+            //    SaveAndResetGame();
+            //}
+            //else if (Input.GetKeyUp(KeyCode.L))
+            //{
+            //    // CTRL + SHIFT + L
+            //    // This is just a placeholder hotkey used test specific functions on command
+            //    Debug.Log("CTRL + SHIFT + L hotkey pressed.");
+            //    Debug.Log("L hotkey pressed.  Reset the scene to the state of the last saved score.");
+            //    string loaded_score_summary_string = this.current_score_entry.score_summary;
+            //    Dictionary<string, List<string>> loaded_score_summary = JsonConvert.DeserializeObject<Dictionary<string, List<string>>>(loaded_score_summary_string);
+            //    this.LoadScore(loaded_score_summary: loaded_score_summary, loaded_score_summary_index: this.current_score_entry_index);
+            //}
+
+            // We use GetKeyUp() here instead of GetKey() or GetKeyDown() so that we only watch for the moment when keys are released
+            // Otherwise, the following logic might fire for every frame that all of the relevant keys are pressed
+            // That is the opposite of what we want in this case
+            if (Input.GetKeyUp(KeyCode.LeftArrow) || Input.GetKeyUp(KeyCode.RightArrow))
             {
-                Debug.Log("CTRL + SHIFT hotkey pressed.");
-                if (e.keyCode == KeyCode.R)
-                {
-                    // CTRL + SHIFT + R
-                    Debug.Log("CTRL + SHIFT + R hotkey pressed.");
-                    Debug.Log("R hotkey pressed.");
-                    SaveAndResetGame();
-                }
-            }
-            else if (e.keyCode == KeyCode.LeftArrow || e.keyCode == KeyCode.RightArrow)
-            {
+                Debug.Log("LeftArrow or RightArrow hotkey pressed.");
                 // CTRL + SHIFT + LeftArrow or CTRL + SHIFT + RightArrow
                 // This is just a placeholder hotkey used test specific functions on command
                 string next_score_location = "left";
-                if (e.keyCode == KeyCode.LeftArrow)
+                if (Input.GetKeyUp(KeyCode.LeftArrow))
                 {
-                    // Debug.Log("CTRL + SHIFT + LeftArrow hotkey pressed.");
-                    Debug.Log("LeftArrow hotkey pressed.");
+                    Debug.Log("CTRL + SHIFT + LeftArrow hotkey pressed.");
+                    //Debug.Log("LeftArrow hotkey pressed. Reset the scene to the state of the previously saved score.");
                 }
-                else if (e.keyCode == KeyCode.RightArrow)
+                else if (Input.GetKeyUp(KeyCode.RightArrow))
                 {
-                    // Debug.Log("CTRL + SHIFT + RighttArrow hotkey pressed.");
-                    Debug.Log("RighttArrow hotkey pressed.");
+                    Debug.Log("CTRL + SHIFT + RightArrow hotkey pressed.");
+                    //Debug.Log("RighttArrow hotkey pressed. Reset the scene to the state of the next saved score.");
                     next_score_location = "right";
                 }
-                // Debug.Log("CTRL + SHIFT + L hotkey pressed.");
-                // Debug.Log("L hotkey pressed.  Reset the scene to the state of the last saved score.");
-                if (this.current_score_entry != null)
+
+                if (this.saved_score_entry_list.Count > 0)
                 {
-                    string loaded_score_summary_string = this.current_score_entry.score_summary;
-                    Dictionary<string, List<string>> loaded_score_summary = JsonConvert.DeserializeObject<Dictionary<string, List<string>>>(loaded_score_summary_string);
-                    this.LoadScore(loaded_score_summary: loaded_score_summary, next_score_location: next_score_location);
+                    this.LoadScore(next_score_location: next_score_location);
                 }
                 else
                 {
@@ -126,6 +107,56 @@ public class ScoreSaveSystemScript : MonoBehaviour {
             }
         }
     }
+
+    //void OnGUI()
+    //{
+    //    // TODO: Figure out why this doesn't work when runnning a standalone game build outside of the editor
+    //    Event e = Event.current;
+    //    // Only check one key release (i.e. EventType.KeyUp) instead of key press to prevent this from executing multiple times
+    //    if (e.type == EventType.KeyUp)
+    //    {
+    //        Debug.Log("Some key pressed.");
+    //        if (e.shift && e.control)
+    //        {
+    //            Debug.Log("CTRL + SHIFT hotkey pressed.");
+    //            if (e.keyCode == KeyCode.R)
+    //            {
+    //                // CTRL + SHIFT + R
+    //                Debug.Log("CTRL + SHIFT + R hotkey pressed.");
+    //                Debug.Log("R hotkey pressed.");
+    //                SaveAndResetGame();
+    //            }
+    //        }
+    //        else if (e.keyCode == KeyCode.LeftArrow || e.keyCode == KeyCode.RightArrow)
+    //        {
+    //            Debug.Log("LeftArrow or RightArrow hotkey pressed.");
+    //            // CTRL + SHIFT + LeftArrow or CTRL + SHIFT + RightArrow
+    //            // This is just a placeholder hotkey used test specific functions on command
+    //            string next_score_location = "left";
+    //            if (e.keyCode == KeyCode.LeftArrow)
+    //            {
+    //                // Debug.Log("CTRL + SHIFT + LeftArrow hotkey pressed.");
+    //                Debug.Log("LeftArrow hotkey pressed.");
+    //            }
+    //            else if (e.keyCode == KeyCode.RightArrow)
+    //            {
+    //                // Debug.Log("CTRL + SHIFT + RighttArrow hotkey pressed.");
+    //                Debug.Log("RighttArrow hotkey pressed.");
+    //                next_score_location = "right";
+    //            }
+    //            // Debug.Log("CTRL + SHIFT + L hotkey pressed.");
+    //            // Debug.Log("L hotkey pressed.  Reset the scene to the state of the last saved score.");
+    //            if (this.saved_score_entry_list.Count > 0)
+    //            {
+    //                this.LoadScore(next_score_location: next_score_location);
+    //            }
+    //            else
+    //            {
+    //                Debug.Log("Warning: You're attempting to load a saved score when one is not available.  Try saving first with Control+Shift+R...");
+    //            }
+    //        }
+    //    }
+    //}
 
     public void LoadSavedScores()
     {
@@ -141,13 +172,10 @@ public class ScoreSaveSystemScript : MonoBehaviour {
                 this.saved_score_entry_list.Add(loaded_score_entry);
             }
         }
-        
-        // Only load a score entry if one has been saved
-        if (this.saved_score_entry_list.Count != 0)
-        {
-            this.current_score_entry_index = this.saved_score_entry_list.Count - 1;
-            this.current_score_entry = this.saved_score_entry_list[this.current_score_entry_index];
-        }
+
+        // Default the score entry index to the size of the list for use in previous/next score navigation
+        // The LoadScore() logic will adjust the index appropriately to prevent index out of bounds errors
+        this.current_score_entry_index = this.saved_score_entry_list.Count;
     }
 
     public void SaveAndResetGame()
@@ -229,10 +257,46 @@ public class ScoreSaveSystemScript : MonoBehaviour {
         this.save_file_handler.WriteString(this.serialized_score_entry);
     }
 
-    public void LoadScore(Dictionary<string, List<string>> loaded_score_summary=null, int loaded_score_summary_index=0, string next_score_location="left")
+    public void LoadScore(Dictionary<string, List<string>> loaded_score_summary=null, int loaded_score_summary_index=0, string next_score_location=null)
     {
         // Reloads the scene with the state of the most recently saved score
         Debug.Log("Now loading: current_score_entry...");
+
+        // Update the current_score_entry_index based on the next_score_location or the loaded_score_summary_index
+        if (next_score_location != null)
+        {
+            // Select the next score index based on the intended direction
+            int relative_index_location = 0;
+            if (next_score_location == "left")
+            {
+                relative_index_location = -1;
+            }
+            else if (next_score_location == "right")
+            {
+                relative_index_location = 1;
+            }
+            this.current_score_entry_index += relative_index_location;
+        }
+        else
+        {
+            this.current_score_entry_index = loaded_score_summary_index;
+        }
+
+        // Prevent IndexOutOfRangeException
+        // Adjust the current_score_entry_index to make sure it's within the valid range of saved_score_entry_list
+        if (this.current_score_entry_index <= 0)
+        {
+            // The oldest saved score has been loaded, so loop back to the newest one
+            this.current_score_entry_index = this.saved_score_entry_list.Count - 1;
+        }
+        else if (this.current_score_entry_index >= this.saved_score_entry_list.Count)
+        {
+            // The newest saved score has been loaded, so loop back to the oldest one
+            this.current_score_entry_index = 0;
+        }
+
+        Debug.LogFormat("this.current_score_entry_index = {0}", this.current_score_entry_index);
+        this.current_score_entry = this.saved_score_entry_list[this.current_score_entry_index];
 
         // loaded_score_summary is of type Dictionary<string, List<string>>, just like the toggle_name_dictionary
         if (loaded_score_summary == null && this.current_score_entry != null)
@@ -272,32 +336,6 @@ public class ScoreSaveSystemScript : MonoBehaviour {
                 // Update the score with the point value of this toggle if it was checked
                 this.UpdateScoreText();
             }
-            if (loaded_score_summary_index == 0 && next_score_location == "left")
-            {
-                // The oldest saved score has been loaded, so loop back to the newest one
-                this.current_score_entry_index = this.saved_score_entry_list.Count - 1;
-            }
-            else if (loaded_score_summary_index == this.saved_score_entry_list.Count - 1 && next_score_location == "right")
-            {
-                // The newest saved score has been loaded, so loop back to the oldest one
-                this.current_score_entry_index = 0;
-            }
-            else
-            {
-                // Select the next score index based on the intended direction
-                int relative_index_location = 0;
-                if (next_score_location == "left")
-                {
-                    relative_index_location = -1;
-                }
-                else if (next_score_location == "right")
-                {
-                    relative_index_location = 1;
-                }
-                this.current_score_entry_index = loaded_score_summary_index + relative_index_location;
-            }
-            
-            this.current_score_entry = this.saved_score_entry_list[this.current_score_entry_index];
         }
         else
         {
